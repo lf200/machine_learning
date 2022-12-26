@@ -1,0 +1,57 @@
+import numpy as np
+import matplotlib.pyplot as plt
+class LinearRegression():
+    def predict(self, x):
+        y = x.dot(self.w) + self.b
+        return y
+    def loss_function(self,train_x,train_y):
+        inst_num = train_x.shape[0]
+        pred_y = train_x.dot(self.w)+self.b
+        loss = np.sum((pred_y - train_y)**2)/(2*inst_num)
+        return loss
+    def calculate_grad(self,train_x,train_y):
+        inst_num = train_x.shape[0]
+        pred_y = train_x.dot(self.w) + self.b
+        grad_w = (train_x.T).dot((pred_y - train_y)) / inst_num
+        grad_b = np.sum((pred_y - train_y)) / inst_num
+        return grad_w, grad_b
+    def gradient_descent(self,train_x,train_y,learn_rate,max_iter, epsilon):
+        loss_list = []
+        for i in range(max_iter):
+            loss_old = self.loss_function(train_x, train_y)
+            loss_list.append(loss_old)
+            grad_w, grad_b = self.calculate_grad(train_x, train_y)
+            self.w = self.w - learn_rate * grad_w
+            self.b = self.b - learn_rate * grad_b
+            loss_new = self.loss_function(train_x, train_y)
+            if abs(loss_new - loss_old) <= epsilon:
+                break
+        return loss_list
+    def fit(self,train_x,train_y,learn_rate,max_iter, epsilon):
+        feat_num = train_x.shape[1]
+        self.w = np.zeros((feat_num, 1))
+        self.b = 0.0
+        loss_list = self.gradient_descent(train_x, train_y, learn_rate, max_iter
+                                      , epsilon)
+        self.training_visualization(loss_list)
+    def training_visualization(self,loss_list):
+        plt.plot(loss_list, color='red')
+        plt.xlabel("iterations")
+        plt.ylabel("loss")
+        plt.savefig("loss.png", bbox_inches= 'tight', dpi = 400)
+        plt.show()
+X = np.linspace(-1, 1, 200)
+Y = 2*X+np.random.randn(200)*0.3
+train_x = X.reshape(-1,1)
+train_y = Y.reshape(-1,1)
+LR = LinearRegression()
+LR.fit(train_x, train_y, 0.01, 1000, 0.00001)
+plt.plot(X,Y,'ro',label="trainning data")
+plt.legend()
+plt.plot(X,LR.w[0,0]*X+LR.b,ls="-",lw=2,c="b")
+plt.xlabel("x")
+plt.ylabel("y")
+s="y=%.3f*x%.3f"%(LR.w[0,0],LR.b)
+plt.text(0,LR.b-0.2,s,color="b")
+plt.savefig("result.png", bbox_inches = 'tight',dpi=400)
+plt.show()
